@@ -42,4 +42,9 @@ server.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-server.listen(config.server.port, ()=> console.log(`🚀 Server running succesffully on port ${config.server.port}`))
+server.listen(Number(config.server.port), '0.0.0.0', () => {
+  console.log(`🚀 Server running on port ${config.server.port}`);
+});
+
+
+// server.listen(config.server.port, ()=> console.log(`🚀 Server running succesffully on port ${config.server.port}`))
