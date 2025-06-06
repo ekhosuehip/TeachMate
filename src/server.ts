@@ -26,9 +26,20 @@ server.use(
 server.use(passport.initialize());
 server.use(passport.session());
 
+// Health check
+server.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: true,
+    message: 'Server is running smoothly',
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 // Auth Routes
 server.use('/api/v1/auth', authRoute);
 
-
+server.use((req, res) => {
+  res.status(404).json({ error: 'Route not found' });
+});
 
 server.listen(config.server.port, ()=> console.log(`🚀 Server running succesffully on port ${config.server.port}`))
