@@ -33,6 +33,8 @@ server.get('/api/health', (req, res) => {
     message: 'Server is running smoothly',
     environment: process.env.NODE_ENV || 'development'
   });
+  console.log('check complete');
+  
 });
 
 // Auth Routes
