@@ -1,5 +1,4 @@
 import fs from 'fs';
-import path from 'path';
 import mammoth from 'mammoth';
 import pdfParse from 'pdf-parse';
 import PptxParser from "node-pptx-parser";
@@ -47,17 +46,15 @@ async function parseDOCX(filePath: string) {
 }
 
 // Unified Parser
-export async function parseFile(filePath: string): Promise<string> {
-  const ext = path.extname(filePath).toLowerCase();
-
-  switch (ext) {
-    case '.pdf':
+export async function parseFile(filePath: string, mimeType: string): Promise<string> {
+  switch (mimeType) {
+    case 'application/pdf':
       return await parsePDF(filePath);
-    case '.docx':
+    case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
       return await parseDOCX(filePath);
-    case '.pptx':
+    case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
       return await parsePPTXFile(filePath);
     default:
-      throw new Error(`Unsupported file type: ${ext}`);
+      throw new Error(`Unsupported MIME type: ${mimeType}`);
   }
 }
