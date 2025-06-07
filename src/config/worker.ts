@@ -1,3 +1,5 @@
+import express from 'express';
+import dotenv from 'dotenv';
 import { Worker, Job } from 'bullmq';
 import fs from 'fs/promises';
 import { tmpdir } from 'os';
@@ -10,6 +12,11 @@ import { s3Config} from '../config/queue';
 import { pipeline } from 'stream/promises';
 import { createWriteStream } from 'fs';
 import { Readable } from 'stream';
+
+dotenv.config()
+
+const app = express();
+const PORT = process.env.PORT || 3000;
 
 const connection = new IORedis(config.redis.url as string, {
   maxRetriesPerRequest: null,
@@ -76,4 +83,14 @@ worker.on('failed', async (job, err) => {
       error: err?.message,
     })
   );
+});
+
+
+
+app.get('/', (req, res) => {
+  res.send('Worker is running');
+});
+
+app.listen(PORT, () => {
+  console.log(`Dummy HTTP server listening on port ${PORT}`);
 });
