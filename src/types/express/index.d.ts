@@ -1,13 +1,12 @@
-import { DecodedUser } from '../interfaces/user';
-import { Multer } from 'multer';
+import { DecodedUser } from "../../interfaces/User";
 
 declare global {
   namespace Express {
     interface Request {
       user?: DecodedUser;
-      file?: Multer.File;
     }
   }
 }
 
 export {}; 
+å
