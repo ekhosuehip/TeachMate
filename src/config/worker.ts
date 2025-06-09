@@ -57,7 +57,9 @@ const worker = new Worker('fileQueue', async (job: Job) => {
     summaries.push(summary);
   }
 
-  const finalSummary = summaries.join('\n\n');
+  const initialsummaries = summaries.join('\n\n');
+
+  const finalSummary = await summarizeText(initialsummaries)
 
   return { s3Key, summary: finalSummary };
 }, {
