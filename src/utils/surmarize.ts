@@ -19,7 +19,7 @@ export function chunkText(text: string, maxWords = 500): string [] {
 export async function summarizeText(text: string): Promise<string> {
   try {
     const summary = await hf.summarization({
-      model: 'facebook/bart-large-cnn',
+      model: 'sshleifer/distilbart-cnn-12-6',
       inputs: text,
       parameters: {
         max_length: 150,
