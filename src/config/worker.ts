@@ -46,6 +46,9 @@ const worker = new Worker('fileQueue', async (job: Job) => {
   await pipeline(bodyStream, createWriteStream(tmpFilePath));
   const parsedText = await parseFile(tmpFilePath, mimeType);
 
+  console.log('🔍 Parsed Text Preview:\n', parsedText.slice(0, 1000)); // print first 1000 chars
+
+
   await fs.unlink(tmpFilePath);
 
   const chunks = chunkText(parsedText)
