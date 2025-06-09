@@ -19,6 +19,8 @@ const AWS_BUCKET_NAME = process.env.AWS_BUCKET_NAME
 
 const sessionSecret = process.env.SESSION_SECRET
 
+const HF_API_KEY = process.env.HF_API_KEY
+
 
 const config = {
     server: {
@@ -45,6 +47,9 @@ const config = {
         secret: AWS_SECRET_ACCESS_KEY,
         region: AWS_REGION,
         bucket: AWS_BUCKET_NAME
+    },
+    hfKey: {
+        key: HF_API_KEY
     }
 }
 
