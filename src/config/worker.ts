@@ -1,5 +1,4 @@
 import express from 'express';
-import dotenv from 'dotenv';
 import { Worker, Job } from 'bullmq';
 import fs from 'fs/promises';
 import { tmpdir } from 'os';
@@ -12,11 +11,10 @@ import { s3Config} from '../config/queue';
 import { pipeline } from 'stream/promises';
 import { createWriteStream } from 'fs';
 import { Readable } from 'stream';
-
-dotenv.config()
+import { chunkText, summarizeText} from '../utils/surmarize'
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = config.server.port || 3000;
 
 const connection = new IORedis(config.redis.url as string, {
   maxRetriesPerRequest: null,
@@ -38,7 +36,6 @@ const worker = new Worker('fileQueue', async (job: Job) => {
     })
   );
 
-  console.log("there");
 
   const bodyStream = s3Stream.Body;
 
@@ -51,9 +48,18 @@ const worker = new Worker('fileQueue', async (job: Job) => {
 
   await fs.unlink(tmpFilePath);
 
+  const chunks = chunkText(parsedText)
   console.log(`Parsed file from ${s3Key}, text length: ${parsedText.length}`);
 
-  return { s3Key, text: parsedText };
+  const summaries = [];
+  for (const chunk of chunks) {
+    const summary = await summarizeText(chunk);
+    summaries.push(summary);
+  }
+
+  const finalSummary = summaries.join('\n\n');
+
+  return { s3Key, summary: finalSummary };
 }, {
   connection,
   removeOnComplete: { age: 3600, count: 1000 },
