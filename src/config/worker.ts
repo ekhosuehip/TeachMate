@@ -11,7 +11,7 @@ import { s3Config} from '../config/queue';
 import { pipeline } from 'stream/promises';
 import { createWriteStream } from 'fs';
 import { Readable } from 'stream';
-import { chunkText, summarizeText} from '../utils/surmarize'
+import { chunkText, runSummarizer} from '../utils/surmarize'
 
 const app = express();
 const PORT = config.server.port || 3000;
@@ -56,13 +56,13 @@ const worker = new Worker('fileQueue', async (job: Job) => {
 
   const summaries = [];
   for (const chunk of chunks) {
-    const summary = await summarizeText(chunk);
+    const summary = await runSummarizer(chunk);
     summaries.push(summary);
   }
 
   const initialsummaries = summaries.join('\n\n');
 
-  const finalSummary = await summarizeText(initialsummaries)
+  const finalSummary = await runSummarizer(initialsummaries)
 
   return { s3Key, summary: finalSummary };
 }, {
