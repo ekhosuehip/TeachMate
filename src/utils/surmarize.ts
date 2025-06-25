@@ -1,55 +1,59 @@
-import { InferenceClient } from '@huggingface/inference';
+import OpenAI from 'openai';
 import config from '../config/config';
+import { encoding_for_model } from '@dqbd/tiktoken';
 
+const client = new OpenAI({
+  apiKey: config.openAI.key as string,
+});
 
-import { pipeline } from '@xenova/transformers';
+// Chunk text by tokens
+function chunkText(text: string, maxTokens = 4000): string[] {
+  const encoder = encoding_for_model("gpt-4.1-nano-2025-04-14");
+  const tokens = encoder.encode(text);
 
-const hf = new InferenceClient(config.hfKey.key as string);
+  const chunks: string[] = [];
+  let start = 0;
 
-export function chunkText(text: string, maxWords = 500): string [] {
-    const words = text.split(/\s+/)
-    const chunks = []
+  const decoder = new TextDecoder();
 
-    for (let i= 0; i <= words.length; i += maxWords){
-        chunks.push(words.slice(i, i + maxWords).join(' '))
-    }
-    return chunks
+  while (start < tokens.length) {
+    const end = Math.min(start + maxTokens, tokens.length);
+    const chunkTokens = tokens.slice(start, end);
+    const chunkText = decoder.decode(chunkTokens);
+    chunks.push(chunkText);
+    start = end;
+  }
+
+  encoder.free();
+  return chunks;
 }
 
-/**
- * Summarizes a block of text using the distilBART model
- */
+// Call OpenAI to summarize a chunk
+async function summarizeText(chunk: string): Promise<string> {
+  try {
+    const response = await client.chat.completions.create({
+      model: "gpt-4.1-nano-2025-04-14",
+      messages: [
+        { role: "system", content: "You are a helpful assistant that summarizes text." },
+        { role: "user", content: `Summarize the following text clearly and concisely, preserving the key points and overall meaning. Use professional tone and structure.\n\n${chunk}` },
+      ],
+    });
+    return response.choices[0]?.message.content || "";
+  } catch (error) {
+    console.error("Error summarizing chunk:", error);
+    return ""; 
+  }
+}
 
+// Recursive summarization flow
+export async function recursiveSummarize(text: string, maxTokens = 4000): Promise<string> {
+  const chunks = chunkText(text, maxTokens);
+  const summaries = await Promise.all(chunks.map(summarizeText));
+  const combinedSummary = summaries.join("\n\n");
 
-
-export const runSummarizer = async (chunk: string) => {
-  const summarizer = await pipeline('summarization', 'Xenova/t5-small');
-
-  const result = await summarizer(chunk, {
-    max_length: 50,
-    min_length: 5,
-  });
-
-  console.log('Summary:', result[0]);
-};
-
-
-
-// export async function summarizeText(text: string): Promise<string> {
-//   try {
-//     const summary = await hf.summarization({
-//       model: 'sshleifer/distilbart-cnn-12-6',
-//       inputs: text,
-//       parameters: {
-//         max_length: 150,
-//         min_length: 30,
-//         do_sample: false,
-//       },
-//     });
-
-//     return summary.summary_text;
-//   } catch (error) {
-//     console.error('Summarization error:', error);
-//     throw new Error('Failed to summarize text.');
-//   }
-// }
+  if (combinedSummary.length > 1000) { 
+    return recursiveSummarize(combinedSummary, maxTokens);
+  } else {
+    return combinedSummary;
+  }
+}

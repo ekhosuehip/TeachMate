@@ -19,7 +19,7 @@ const AWS_BUCKET_NAME = process.env.AWS_BUCKET_NAME
 
 const sessionSecret = process.env.SESSION_SECRET
 
-const HF_API_KEY = process.env.HF_API_KEY
+const OpenAI_API_KEY = process.env.OPEN_AI
 
 
 const config = {
@@ -48,8 +48,8 @@ const config = {
         region: AWS_REGION,
         bucket: AWS_BUCKET_NAME
     },
-    hfKey: {
-        key: HF_API_KEY
+    openAI: {
+        key: OpenAI_API_KEY
     }
 }
 

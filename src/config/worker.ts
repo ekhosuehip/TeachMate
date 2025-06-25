@@ -11,7 +11,7 @@ import { s3Config} from '../config/queue';
 import { pipeline } from 'stream/promises';
 import { createWriteStream } from 'fs';
 import { Readable } from 'stream';
-import { chunkText, runSummarizer} from '../utils/surmarize'
+import { recursiveSummarize } from '../utils/surmarize'
 
 const app = express();
 const PORT = config.server.port || 3000;
@@ -51,20 +51,22 @@ const worker = new Worker('fileQueue', async (job: Job) => {
 
   await fs.unlink(tmpFilePath);
 
-  const chunks = chunkText(parsedText)
-  console.log(`Parsed file from ${s3Key}, text length: ${parsedText.length}`);
+  // const chunks = chunkText(parsedText)
+  // console.log(`Parsed file from ${s3Key}, text length: ${parsedText.length}`);
 
-  const summaries = [];
-  for (const chunk of chunks) {
-    const summary = await runSummarizer(chunk);
-    summaries.push(summary);
-  }
+  // const summaries = [];
+  // for (const chunk of chunks) {
+  //   const summary = await summarizeText(chunk);
+  //   summaries.push(summary);
+  // }
 
-  const initialsummaries = summaries.join('\n\n');
+  // const initialsummaries = summaries.join('\n\n');
 
-  const finalSummary = await runSummarizer(initialsummaries)
+  // const finalSummary = await summarizeText(initialsummaries);
 
-  return { s3Key, summary: finalSummary };
+  const summary = recursiveSummarize(parsedText)
+
+  return { s3Key, summary: summary };
 }, {
   connection,
   removeOnComplete: { age: 3600, count: 1000 },
