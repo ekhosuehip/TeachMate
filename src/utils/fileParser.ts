@@ -1,5 +1,6 @@
 import fs from 'fs';
 import mammoth from 'mammoth';
+import Tesseract from 'tesseract.js';
 import pdfParse from 'pdf-parse';
 import PptxParser from "node-pptx-parser";
 
@@ -22,14 +23,30 @@ async function parsePPTXFile(filePath: string) {
 }
 
 // PDF Parsing
-async function parsePDF(filePath: string) {
+async function performOCR(filePath: string): Promise<string> {
+  const { data: { text } } = await Tesseract.recognize(filePath, 'eng', {
+    logger: m => console.log(m), // optional: logs OCR progress
+  });
+  return text;
+}
+
+export async function parsePDF(filePath: string) {
   const buffer = fs.readFileSync(filePath);
-  
+
   try {
     const data = await pdfParse(buffer);
+
+    // If pdf-parse returns too little text, try OCR
+    if (!data.text || data.text.trim().length < 50) {
+      console.log('PDF text too short or empty, running OCR...');
+      const ocrText = await performOCR(filePath);
+      return ocrText;
+    }
+
     return data.text;
+
   } catch (error) {
-    console.log(error)
+    console.error('Error parsing PDF:', error);
     throw new Error("Failed to parse PDF file");
   }
 }
