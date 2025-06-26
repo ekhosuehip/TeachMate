@@ -51,20 +51,7 @@ const worker = new Worker('fileQueue', async (job: Job) => {
 
   await fs.unlink(tmpFilePath);
 
-  // const chunks = chunkText(parsedText)
-  // console.log(`Parsed file from ${s3Key}, text length: ${parsedText.length}`);
-
-  // const summaries = [];
-  // for (const chunk of chunks) {
-  //   const summary = await summarizeText(chunk);
-  //   summaries.push(summary);
-  // }
-
-  // const initialsummaries = summaries.join('\n\n');
-
-  // const finalSummary = await summarizeText(initialsummaries);
-
-  const summary = recursiveSummarize(parsedText)
+  const summary = await recursiveSummarize(parsedText)
 
   return { s3Key, summary: summary };
 }, {
