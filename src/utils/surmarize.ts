@@ -19,7 +19,7 @@ function chunkText(text: string, maxTokens = 4000): string[] {
   while (start < tokens.length) {
     const end = Math.min(start + maxTokens, tokens.length);
     const chunkTokens = tokens.slice(start, end);
-    const chunkText = decoder.decode(chunkTokens);
+    const chunkText = decoder.decode(new Uint8Array(chunkTokens));
     chunks.push(chunkText);
     start = end;
   }
@@ -27,6 +27,7 @@ function chunkText(text: string, maxTokens = 4000): string[] {
   encoder.free();
   return chunks;
 }
+
 
 // Call OpenAI to summarize a chunk
 async function summarizeText(chunk: string): Promise<string> {
