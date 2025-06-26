@@ -36,7 +36,6 @@ const worker = new Worker('fileQueue', async (job: Job) => {
     })
   );
 
-
   const bodyStream = s3Stream.Body;
 
   if (!bodyStream || !(bodyStream instanceof Readable)) {
@@ -45,8 +44,9 @@ const worker = new Worker('fileQueue', async (job: Job) => {
 
   await pipeline(bodyStream, createWriteStream(tmpFilePath));
   const parsedText = await parseFile(tmpFilePath, mimeType);
-
-  console.log('🔍 Parsed Text Preview:\n', parsedText.slice(0, 1000)); // print first 1000 chars
+    
+  console.log("Parsed text length:", parsedText.length);
+  console.log("Parsed text preview:", parsedText.slice(0, 500));
 
 
   await fs.unlink(tmpFilePath);
