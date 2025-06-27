@@ -11,7 +11,7 @@ import { s3Config} from '../config/queue';
 import { pipeline } from 'stream/promises';
 import { createWriteStream } from 'fs';
 import { Readable } from 'stream';
-import { recursiveSummarize } from '../utils/surmarize'
+import { summarizeText } from '../utils/surmarize'
 
 const app = express();
 const PORT = config.server.port || 3000;
@@ -46,12 +46,10 @@ const worker = new Worker('fileQueue', async (job: Job) => {
   const parsedText = await parseFile(tmpFilePath, mimeType);
     
   console.log("Parsed text length:", parsedText.length);
-  console.log("Parsed text preview:", parsedText.slice(0, 500));
-
 
   await fs.unlink(tmpFilePath);
 
-  const summary = await recursiveSummarize(parsedText)
+  const summary = await summarizeText(parsedText)
 
   return { s3Key, summary: summary };
 }, {
