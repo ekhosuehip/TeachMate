@@ -36,7 +36,11 @@ export async function summarizeText(chunk: string): Promise<string> {
       model: "gpt-4.1-nano-2025-04-14",
       messages: [
         { role: "system", content: "You are a helpful assistant that summarizes text." },
-        { role: "user", content: `Summarize the following text clearly and concisely, preserving the key points and overall meaning. Use professional tone and structure.\n\n${chunk}` },
+        { role: "user", content: `Please summarize the following text clearly and concisely, preserving key points and overall meaning. 
+
+Make sure your summary is structured using meaningful **subheadings** and **paragraphs** for clarity and easy reading. Use a professional tone and format the response with line breaks between paragraphs and subheadings.
+
+Here is the text to summarize:\n\n${chunk}` },
       ],
     });
     return response.choices[0]?.message.content || "";
