@@ -93,15 +93,32 @@ async function parseDOCX(filePath: string): Promise<string> {
   }
 }
 
+async function parseTXT(filePath: string): Promise<string> {
+  try {
+    const content = await fs.promises.readFile(filePath, 'utf-8');
+    return content.trim();
+  } catch (error) {
+    console.error("❌ Failed to parse TXT file:", error);
+    throw new Error("Failed to parse TXT file");
+  }
+}
+
+
 export async function parseFile(filePath: string, mimeType: string): Promise<string> {
   switch (mimeType) {
     case 'application/pdf':
       return await parsePDF(filePath);
     case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+    case 'application/docx':
+    case 'application/msword':
       return await parseDOCX(filePath);
     case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+    case 'application/pptx':
       return await parsePPTXFile(filePath);
+    case 'text/plain':
+      return await parseTXT(filePath);
     default:
       throw new Error(`Unsupported MIME type: ${mimeType}`);
   }
 }
+

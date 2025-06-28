@@ -11,7 +11,7 @@ import { s3Config } from '../config/queue';
 import { pipeline } from 'stream/promises';
 import { createWriteStream } from 'fs';
 import { Readable } from 'stream';
-import { summarizeText } from '../utils/surmarize';
+import { recursiveSummarize } from '../utils/surmarize';
 
 const app = express();
 const PORT = config.server.port || 5000;
@@ -57,7 +57,7 @@ const worker = new Worker(
       await fs.unlink(tmpFilePath);
       console.log(`🗑 Temporary file removed: ${tmpFilePath}`);
 
-      const summary = await summarizeText(parsedText);
+      const summary = await recursiveSummarize(parsedText);
       console.log(`📝 Summary generated`);
       console.log(`📝 Summary ${summary}`);
 
