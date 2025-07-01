@@ -11,7 +11,10 @@ import { s3Config } from '../config/queue';
 import { pipeline } from 'stream/promises';
 import { createWriteStream } from 'fs';
 import { Readable } from 'stream';
+import chunkText from '../utils/chunk';
 import { recursiveSummarize } from '../utils/surmarize';
+import { cardQuestions } from '../utils/flashcard';
+import { fillTheBlanks } from '../utils/fillTheBlank'
 
 const app = express();
 const PORT = config.server.port || 5000;
@@ -27,7 +30,7 @@ const pubClient = new IORedis(config.redis.url as string, {
 const worker = new Worker(
   'fileQueue',
   async (job: Job) => {
-    const { filePath: s3Key, originalName, mimeType } = job.data;
+    const { filePath: s3Key, originalName, mimeType, difficulty, flashcard, quizz, summary } = job.data;
 
     console.log(`👷 Starting job ${job.id} for ${originalName}`);
 
@@ -57,11 +60,18 @@ const worker = new Worker(
       await fs.unlink(tmpFilePath);
       console.log(`🗑 Temporary file removed: ${tmpFilePath}`);
 
-      const summary = await recursiveSummarize(parsedText);
+      const chunks = chunkText(parsedText)
+      const summary = await recursiveSummarize(chunks, 12000, 0, difficulty);
+      const questions = await cardQuestions(chunks);
+      const blankQuestions = await fillTheBlanks(chunks)
+
       console.log(`📝 Summary generated`);
       console.log(`📝 Summary ${summary}`);
+      console.log(`📝 difficulty ${difficulty}`);
+      console.log("card", JSON.stringify(questions, null, 2));
+      console.log("card", JSON.stringify(blankQuestions, null, 2));
 
-      return { s3Key, summary };
+      return { s3Key, summaryText: summary, cardQuestions: questions };
     } catch (error) {
       console.error(`❌ Job ${job.id} failed:`, error);
       throw error;

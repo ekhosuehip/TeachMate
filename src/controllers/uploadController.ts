@@ -42,7 +42,7 @@ export const getPresignedUrl = async (req: Request, res: Response) => {
 }
 
 export const notifyUpload = async (req: Request, res: Response) => {
-    const { s3Key, originalName, mimeType } = req.body
+    const { s3Key, originalName, mimeType, difficulty, flashcard, quizz, summary } = req.body
 
     if(!s3Key || !originalName || !mimeType){
         res.status(400).json({
@@ -56,6 +56,10 @@ export const notifyUpload = async (req: Request, res: Response) => {
             filePath: s3Key,
             originalName,
             mimeType,
+            difficulty,
+            flashcard,
+            quizz,
+            summary
         });
         res.status(200).json({
             success: true,

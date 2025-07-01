@@ -8,7 +8,7 @@ const router = express.Router();
 
 // router.use(protect)
 
-router.post('/s3url', validate(preSignedUrlSchema), getPresignedUrl);
+router.post('/s3url', getPresignedUrl);
 
 router.post('/notify', notifyUpload);
 
